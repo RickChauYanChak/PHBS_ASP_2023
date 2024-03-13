@@ -19,7 +19,7 @@ def basket_check_args(spot, vol, corr_m, weights):
     
 def basket_price_mc_cv(
     strike, spot, vol, weights, texp, cor_m, 
-    intr=0.0, divr=0.0, cp=1, n_samples=10000
+    intr=0.0, divr=0.0, cp=1, n_samples=100000
 ):
     # price1 = MC based on BSM
     rand_st = np.random.get_state() # Store random state first
@@ -37,7 +37,10 @@ def basket_price_mc_cv(
         strike, spot, spot*vol, weights, texp, cor_m,
         intr, divr, cp, False, n_samples)
     '''
-    price2 = 0
+    np.random.set_state(rand_st)
+    price2 = basket_price_mc(
+        strike, spot, spot*vol, weights, texp, cor_m,
+        intr, divr, cp, False, n_samples)
 
     ''' 
     compute price3: analytic price based on normal model
@@ -45,7 +48,8 @@ def basket_price_mc_cv(
     price3 = basket_price_norm_analytic(
         strike, spot, vol, weights, texp, cor_m, intr, divr, cp)
     '''
-    price3 = 0
+    price3 = basket_price_norm_analytic(
+        strike, spot, vol, weights, texp, cor_m, intr, divr, cp)
     
     # return two prices: without and with CV
     return np.array([price1, price1 - (price2 - price3)])
@@ -71,7 +75,8 @@ def basket_price_mc(
         '''
         PUT the simulation of the geometric brownian motion below
         '''
-        prices = np.zeros_like(znorm_m)
+        diag = np.diag(cov_m)
+        prices = forward[:,None] * np.exp(-0.5 * texp * diag[:, None] + np.sqrt(texp) * chol_m @ znorm_m)
     else:
         # bsm = False: normal model
         prices = forward[:,None] + np.sqrt(texp) * chol_m @ znorm_m
@@ -99,7 +104,16 @@ def basket_price_norm_analytic(
     
     PUT YOUR CODE BELOW
     '''
+    basket_check_args(spot, vol, cor_m, weights)
+
+    div_fac = np.exp(-texp*divr)
+    disc_fac = np.exp(-texp*intr)
+    forward = weights @ (spot / disc_fac * div_fac)
+
+    vol = vol * spot
+    cov_m = vol * cor_m * vol[:,None]
+    sig = np.sqrt(weights @ cov_m @ weights)
+
+    norm = pf.Norm(sig, intr=intr, divr=divr, is_fwd=True)
     
-    
-    
-    return 0.0
+    return norm.price(strike, forward, texp, cp=cp)
