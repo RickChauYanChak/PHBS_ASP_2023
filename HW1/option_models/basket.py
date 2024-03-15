@@ -2,7 +2,7 @@
 """
 Created on Tue Sep 19 22:56:58 2017
 
-@author: jaehyuk
+@author: Jaehyuk Choi, Enze Zhou
 """
 import numpy as np
 import scipy.stats as ss
