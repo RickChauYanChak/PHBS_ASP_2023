@@ -108,12 +108,13 @@ def basket_price_norm_analytic(
 
     div_fac = np.exp(-texp*divr)
     disc_fac = np.exp(-texp*intr)
-    forward = weights @ (spot / disc_fac * div_fac)
+    forward = spot / disc_fac * div_fac
+    forward_basket = weights @ (spot / disc_fac * div_fac)
 
-    vol = vol * spot
+    vol = vol * forward
     cov_m = vol * cor_m * vol[:,None]
     sig = np.sqrt(weights @ cov_m @ weights)
 
     norm = pf.Norm(sig, intr=intr, divr=divr, is_fwd=True)
     
-    return norm.price(strike, forward, texp, cp=cp)
+    return norm.price(strike, forward_basket, texp, cp=cp)
