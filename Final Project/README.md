@@ -41,8 +41,7 @@ $$
 
 **Algorithm 1** (Modfied Euler-Maruyama algorithm): 
 
-Let $\left\{t_n:=n \tau, n=0,1, \ldots, N\right\}$ be a given uniform mesh on $[0, T]$, where $N$ is a positive integer and $\tau=T / N$. At time level $t_n$, the stochastic Volterra integral equation is approximately written as
-
+Let $\{t_n:=n \tau, n=0,1, \ldots, N\}$ be a given uniform mesh on $[0, T]$, where $N$ is a positive integer and $\tau=T / N$. At time level $t_n$, the stochastic Volterra integral equation is approximately written as
 
 $$
 \begin{aligned}
@@ -102,12 +101,15 @@ t^{-\alpha} \approx \sum_{l=1}^{N_{\exp }} \omega_l e^{-x_l t},
 $$
 
 where
+
 $$
 \begin{aligned}
 N_{\exp }= & {\left[O \left(\log \frac{1}{\xi}\left(\log \log \frac{1}{\xi}+\log \frac{T}{\tau}\right)\right.\right.} \left.\left.+\log \frac{1}{\tau}\left(\log \log \frac{1}{\xi} \log \frac{1}{\tau}\right)\right)\right]
 \end{aligned}
 $$
+
 and
+
 $$
 \begin{aligned}
 \left\{x_l, l=1, \ldots, N_{\exp }\right\} &=\left\{s_{o, 1}, \ldots, s_{o, n_o}\right\} \bigcup  \left(\bigcup_{j=-M}^{-1}\left\{s_{j, 1}, \ldots, s_{j, n_s}\right\}\right) \bigcup  \left(\bigcup_{j=0}^N\left\{s_{j, 1}, \ldots, s_{j, n_l}\right\}\right), \\
@@ -122,6 +124,7 @@ $$
 ---
 
 **Algorithm 2** (Fast algorithm) The fast algorithm for simulation of (2) is given by
+
 $$
 \begin{aligned}
 V_{t_n}^N &= V_0+\frac{\tau^{1-\alpha}}{\Gamma(2-\alpha)} f\left(V_{t_{n-1}}^N\right) +\frac{1}{\Gamma(1-\alpha)} \sum_{l=1}^{N_{\text {exp }}} \omega_l e^{-x_l \tau} H_l^N\left(t_{n-1}\right) \\
@@ -130,6 +133,7 @@ H_l^N\left(t_{n-1}\right) &= \frac{f\left(V_{t_{n-2}}^N\right)}{x_l}\left(1-e^{-
 J_l^N\left(t_{n-1}\right) &= e^{-x_l \tau} g\left(V_{t_{n-2}}^N\right) \sqrt{\tau} Z_{t_{n-1}}+e^{-x_l \tau} J_l^N\left(t_{n-2}\right), \quad n=2, \ldots, N,
 \end{aligned}
 $$
+
 with $V_{t_0}^N=V_0, \quad H_l^N\left(t_0\right)=0, \quad J_l^N\left(t_0\right)=0, \quad \tau=T / N, \quad Z_{t_n} \sim$ $\mathcal{N}(0,1)$ for $n=1, \ldots, N$.
 
 <img src="Fast_paths.svg" alt="Fast paths" width="linewidth"/>
