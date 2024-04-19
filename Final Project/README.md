@@ -137,6 +137,34 @@ with $V_{t_0}^N=V_0, \quad H_l^N\left(t_0\right)=0, \quad J_l^N\left(t_0\right)=
 
 ## Multi-factor approximation algorithm for simulating rough Heston models 
 
+[Abi Jaber and El Euch (2019)](#AbiJaber2019) approximate the kernel function by
+
+$$
+\frac{t^{-\alpha}}{\Gamma(1-\alpha)} \approx \sum_{j=1}^{\tilde{N}_{\text {exp }}} c_j e^{-\gamma_j t},
+$$
+
+with 
+
+$$
+\begin{aligned}
+& c_j:=\int_{\eta_{j-1}}^{\eta_j} \mu(d \gamma), \quad \gamma_j:=\frac{1}{c_j} \int_{\eta_{j-1}}^{\eta_j} \gamma \mu(d \gamma), \\
+& \eta_j:=j \frac{\widetilde{N}_{\exp }^{-1 / 5}}{T}\left(\frac{\sqrt{10} \alpha}{2+\alpha}\right)^{2 / 5}, \quad \mu(d \gamma):=\frac{\gamma^{\alpha-1}}{\Gamma(1-\alpha) \Gamma(\alpha)} \mathrm{d} \gamma.
+\end{aligned}
+$$
+
+Next, the rough Heston model is approximated by the following multi-factor Heston model
+
+$$
+\begin{aligned}
+V_t^{\widetilde{N}_{\text {exp}}} & =V_0+\kappa \theta \sum_{j=1}^{\widetilde{N}_{\text {exp}}} \frac{c_j}{\gamma_j}\left(1-e^{-\gamma_j t}\right)+\sum_{j=1}^{\widetilde{N}_{\text {exp}}} c_j V_t^{\widetilde{N}_{\text {exp}}, j}, \\
+d V_t^{\widetilde{N}_{\text {exp}}, j} & =\left(-\gamma_j V_t^{\widetilde{N}_{\text {exp}}, j}-\kappa V_t^{\widetilde{N}_{\text {exp}}}\right) \mathrm{d} t+g\left(V_t^{\widetilde{N}_{\text {exp}}}\right) \mathrm{d} B_t,
+\end{aligned}
+$$
+
+with $V_0^{\widetilde{N}_{\text {exp}}, j} = 0$, for $j=1, \ldots, \widetilde{N}_{\text {exp}}$.
+
+---
+
 Algorithm 4 (Multi-factor approximation algorithm, [Abi Jaber (2019)](#AbiJaber2019)) Let $V_{t_n}^{\widetilde{N}_\text{exp}, N}$ and $V_{t_n}^{\tilde{N}_{\text{exp}}, j, N}$ denote the approximation of $V_{t_n}^{\tilde{N}_{\text{exp}}}$ and $V_{t_n}^{\tilde{N}_{\text{exp}}, j}$, respectively, for $n=0,1, \ldots, N$. Then the algorithm for simulation of rough Heston model given by
 
 $$
