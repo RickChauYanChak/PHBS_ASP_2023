@@ -41,7 +41,7 @@ $$
 
 **Algorithm 1** (Modfied Euler-Maruyama algorithm): 
 
-Let $\left\{t_n:=n \tau, n=0,1, \ldots, N\right\}$ be a given uniform mesh on $[0, T]$, where $N$ is a positive integer and $\tau=$ $T / N$. At time level $t_n$, the stochastic Volterra integral equation is approximately written as
+Let $\left\{t_n:=n \tau, n=0,1, \ldots, N\right\}$ be a given uniform mesh on $[0, T]$, where $N$ is a positive integer and $\tau=T / N$. At time level $t_n$, the stochastic Volterra integral equation is approximately written as
 
 
 $$
@@ -50,6 +50,7 @@ V_{t_n}^N= & V_0+\frac{1}{\Gamma(2-\alpha)} \sum_{k=1}^n f\left(V_{t_{k-1}}^N\ri
 & +\frac{1}{\Gamma(1-\alpha)} \sum_{k=1}^n g\left(V_{t_{k-1}}^N\right) \left[\frac{\left(t_n-t_{k-1}\right)^{1-2 \alpha}-\left(t_n-t_k\right)^{1-2 \alpha}}{1-2 \alpha}\right]^{1 / 2} Z_{t_k},
 \end{aligned}
 $$
+
 where $Z_{t_k} \sim \mathcal{N}(0,1)$
 
 <img src="EM_paths.svg" alt="EM paths" width="linewidth"/>
@@ -71,11 +72,13 @@ where $Z_{t_k} \sim \mathcal{N}(0,1)$
 
 
 From the definition of $\Gamma$ function, we can write the kernel function $t^{-\alpha}$ for $\alpha>0$ into an integral form
+
 $$
 t^{-\alpha}=\frac{1}{\Gamma(\alpha)} \int_0^{\infty} e^{-t s} s^{\alpha-1} \mathrm{~d} s .
 $$
 
 This is further written as for $t \in[\tau, T]$ and $\tau=T / N \in(0,1]$,
+
 $$
 \begin{aligned}
 \Gamma(\alpha) t^{-\alpha}= & \int_0^{\infty} e^{-t s} s^{\alpha-1} \mathrm{~d} s \\
@@ -85,6 +88,7 @@ $$
 $$
 
 Then, with Gaussian quadrature (Gauss-Jacobi and Gauss-Legendre),
+
 $$
 \begin{aligned}
 \Gamma(\alpha) t^{-\alpha} \approx & \sum_{k=1}^{n_o} e^{-s_{o, k} t} w_{o, k}+\sum_{j=-M}^{-1} \sum_{k=1}^{n_s} e^{-s_{j, k} t} s_{j, k}^{\alpha-1} w_{j, k} +\sum_{j=0}^N \sum_{k=1}^{n_l} e^{-s_{j, k} t} s_{j, k}^{\alpha-1} w_{j, k}
@@ -92,9 +96,11 @@ $$
 $$
 
 This is re-written into the following compact form:
+
 $$
 t^{-\alpha} \approx \sum_{l=1}^{N_{\exp }} \omega_l e^{-x_l t},
 $$
+
 where
 $$
 \begin{aligned}
