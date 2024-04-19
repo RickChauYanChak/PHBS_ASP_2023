@@ -137,7 +137,7 @@ with $V_{t_0}^N=V_0, \quad H_l^N\left(t_0\right)=0, \quad J_l^N\left(t_0\right)=
 
 ## Multi-factor approximation algorithm for simulating rough Heston models 
 
-Algorithm 4 (Multi-factor approximation algorithm, [Abi Jaber (2019)](#AbiJaber2019)) Let $V_{t_n}^{\widetilde{N}_{\text{exp}}, N}$ and $V_{t_n}^{\tilde{N}_{\text{exp}}, j, N}$ denote the approximation of $V_{t_n}^{\tilde{N}_{\text{exp}}}$ and $V_{t_n}^{\tilde{N}_{\text{exp}}, j}$, respectively, for $n=0,1, \ldots, N$. Then the algorithm for simulation of rough Heston model given by
+Algorithm 4 (Multi-factor approximation algorithm, [Abi Jaber (2019)](#AbiJaber2019)) Let $V_{t_n}^{\widetilde{N}_\text{exp}, N}$ and $V_{t_n}^{\tilde{N}_{\text{exp}}, j, N}$ denote the approximation of $V_{t_n}^{\tilde{N}_{\text{exp}}}$ and $V_{t_n}^{\tilde{N}_{\text{exp}}, j}$, respectively, for $n=0,1, \ldots, N$. Then the algorithm for simulation of rough Heston model given by
 
 $$
 \begin{aligned}
