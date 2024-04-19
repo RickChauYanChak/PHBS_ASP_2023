@@ -161,7 +161,7 @@ d V_t^{\widetilde{N}_{\text {exp}}, j} & =\left(-\gamma_j V_t^{\widetilde{N}_{\t
 \end{aligned}
 $$
 
-with $V_0^{\widetilde{N}_{\text {exp}}, j} = 0$, for $j=1, \ldots, \widetilde{N}_{\text {exp}}$.
+with $V_0^{\widetilde{N}_{\text {exp}}, j} = 0$, for $j=1, \ldots, \tilde{N}_{\text {exp}}$.
 
 ---
 
