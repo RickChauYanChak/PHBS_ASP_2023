@@ -104,7 +104,7 @@ where
 
 $$
 \begin{aligned}
-N_{\exp }= & {\left[O \left(\log \frac{1}{\xi}\left(\log \log \frac{1}{\xi}+\log \frac{T}{\tau}\right)\right.\right.} \left.\left.+\log \frac{1}{\tau}\left(\log \log \frac{1}{\xi} \log \frac{1}{\tau}\right)\right)\right]
+N_{\exp }= & \left[O \left(\log \frac{1}{\xi}\left(\log \log \frac{1}{\xi}+\log \frac{T}{\tau}\right) +\log \frac{1}{\tau}\left(\log \log \frac{1}{\xi} \log \frac{1}{\tau}\right)\right)\right]
 \end{aligned}
 $$
 
@@ -148,7 +148,6 @@ $$
 & V_{t_n}^{\widetilde{N}_{\text {exp}}, N}=V_{t_0}^{\widetilde{N}_{\text {exp}}, N}+\kappa \theta \sum_{j=1}^{\tilde{N}_{\text {exp}}} \frac{c_j}{\gamma_j}\left(1-e^{-\gamma_j t_n}\right)+\sum_{j=1}^{\tilde{N}_{\text {exp }}} c_j V_{t_n}^{\widetilde{N}_{\text {exp}}, j, N}, \\
 & V_{t_n}^{\widetilde{N}_{\text {exp}}, j, N}=\frac{V_{t_{n-1}}^{\widetilde{N}_{\text {exp}}, j, N}-\kappa V_{t_{n-1}}^{\widetilde{N}_{\text {exp}}, N} \tau+g\left(V_{t_{n-1}}^{\widetilde{N}_{\text {exp}}, N}\right) \sqrt{\tau} Z_{t_n}}{1+\gamma_j \tau}, \\
 & j=1,2, \ldots, \widetilde{N}_{\text {exp}}, \\
-&
 \end{aligned}
 $$
 
