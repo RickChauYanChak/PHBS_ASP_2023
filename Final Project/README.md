@@ -112,14 +112,11 @@ and
 
 $$
 \begin{aligned}
-\left\{x_l, l=1, \ldots, N_{\exp }\right\} &=\left\{s_{o, 1}, \ldots, s_{o, n_o}\right\} \bigcup  \left(\bigcup_{j=-M}^{-1}\left\{s_{j, 1}, \ldots, s_{j, n_s}\right\}\right) \bigcup  \left(\bigcup_{j=0}^N\left\{s_{j, 1}, \ldots, s_{j, n_l}\right\}\right), \\
-\left\{\omega_l,l=1, \ldots, N_{\exp }\right\} &= \left\{w_{o, 1} / \Gamma(\alpha), \ldots, w_{o, n_o} / \Gamma(\alpha)\right\} \bigcup\left(\bigcup_{j=-M}^{-1}\left\{s_{j, 1}^{\alpha-1} w_{j, 1} / \Gamma(\alpha), \ldots, s_{j, n_s}^{\alpha-1} w_{j, n_s} / \Gamma(\alpha)\right\}\right) \\
-& \qquad\bigcup\left(\bigcup_{j=0}^N\left\{s_{j, 1}^{\alpha-1} w_{j, 1} / \Gamma(\alpha), \ldots, s_{j, n_l}^{\alpha-1} w_{j, n_l} / \Gamma(\alpha)\right\}\right) .
+\{x_l, l=1, \ldots, N_{\exp} \} &=\{s_{o, 1}, \ldots, s_{o, n_o}\} \bigcup  \left(\bigcup_{j=-M}^{-1} \{s_{j, 1}, \ldots, s_{j, n_s}\}\right) \bigcup  \left(\bigcup_{j=0}^N \{s_{j, 1}, \ldots, s_{j, n_l} \}\right), \\
+\{\omega_l,l=1, \ldots, N_{\exp}\} &= \{w_{o, 1} / \Gamma(\alpha), \ldots, w_{o, n_o} / \Gamma(\alpha)\} \bigcup\left(\bigcup_{j=-M}^{-1} \{s_{j, 1}^{\alpha-1} w_{j, 1} / \Gamma(\alpha), \ldots, s_{j, n_s}^{\alpha-1} w_{j, n_s} / \Gamma(\alpha) \}\right) \\
+& \qquad\bigcup\left(\bigcup_{j=0}^N \{s_{j, 1}^{\alpha-1} w_{j, 1} / \Gamma(\alpha), \ldots, s_{j, n_l}^{\alpha-1} w_{j, n_l} / \Gamma(\alpha)\}\right) .
 \end{aligned}
 $$
-
-
-
 
 ---
 
@@ -140,18 +137,17 @@ with $V_{t_0}^N=V_0, \quad H_l^N\left(t_0\right)=0, \quad J_l^N\left(t_0\right)=
 
 ## Multi-factor approximation algorithm for simulating rough Heston models 
 
-Algorithm 4 (Multi-factor approximation algorithm, [Abi Jaber (2019)](#AbiJaber2019))
-Let $V_{t_n}^{\widetilde{N}_{\text {exp }}, N}$ and $V_{t_n}^{\tilde{N}_{\text {exp}}, j, N}$ denote the approximation of $V_{t_n}^{\tilde{N}_{\text {exp}}}$ and $V_{t_n}^{\tilde{N}_{\text {exp}}, j}$, respectively, for $n=0,1, \ldots, N$. Then the algorithm for simulation of rough Heston model given by
+Algorithm 4 (Multi-factor approximation algorithm, [Abi Jaber (2019)](#AbiJaber2019)) Let $V_{t_n}^{\widetilde{N}_{\text{exp}}, N}$ and $V_{t_n}^{\tilde{N}_{\text{exp}}, j, N}$ denote the approximation of $V_{t_n}^{\tilde{N}_{\text{exp}}}$ and $V_{t_n}^{\tilde{N}_{\text{exp}}, j}$, respectively, for $n=0,1, \ldots, N$. Then the algorithm for simulation of rough Heston model given by
 
 $$
 \begin{aligned}
-& V_{t_n}^{\widetilde{N}_{\text {exp}}, N}=V_{t_0}^{\widetilde{N}_{\text {exp}}, N}+\kappa \theta \sum_{j=1}^{\tilde{N}_{\text {exp}}} \frac{c_j}{\gamma_j}\left(1-e^{-\gamma_j t_n}\right)+\sum_{j=1}^{\tilde{N}_{\text {exp }}} c_j V_{t_n}^{\widetilde{N}_{\text {exp}}, j, N}, \\
-& V_{t_n}^{\widetilde{N}_{\text {exp}}, j, N}=\frac{V_{t_{n-1}}^{\widetilde{N}_{\text {exp}}, j, N}-\kappa V_{t_{n-1}}^{\widetilde{N}_{\text {exp}}, N} \tau+g\left(V_{t_{n-1}}^{\widetilde{N}_{\text {exp}}, N}\right) \sqrt{\tau} Z_{t_n}}{1+\gamma_j \tau}, \\
-& j=1,2, \ldots, \widetilde{N}_{\text {exp}}, \\
+& V_{t_n}^{\widetilde{N}_{\text{exp}}, N}=V_{t_0}^{\widetilde{N}_{\text{exp}}, N}+\kappa \theta \sum_{j=1}^{\tilde{N}_{\text{exp}}} \frac{c_j}{\gamma_j}\left(1-e^{-\gamma_j t_n}\right)+\sum_{j=1}^{\tilde{N}_{\text{exp}}} c_j V_{t_n}^{\widetilde{N}_{\text{exp}}, j, N}, \\
+& V_{t_n}^{\widetilde{N}_{\text{exp}}, j, N}=\frac{V_{t_{n-1}}^{\widetilde{N}_{\text{exp}}, j, N}-\kappa V_{t_{n-1}}^{\widetilde{N}_{\text{exp}}, N} \tau+g\left(V_{t_{n-1}}^{\widetilde{N}_{\text{exp}}, N}\right) \sqrt{\tau} Z_{t_n}}{1+\gamma_j \tau}, \\
+& j=1,2, \ldots, \widetilde{N}_{\text{exp}}, \\
 \end{aligned}
 $$
 
-where $V_{t_0}^{\tilde{N}_{\text {exp}}, N}=V_0, V_{t_0}^{\widetilde{N}_{\text {exp}}, N}=0, \tau=T / N, Z_{t_n} \sim \mathcal{N}(0,1)$ for $n=1, \ldots, N$, and $c_j, \gamma_j, \eta_j$ are given by (27). It thus gives the simulation of the rough Heston model (29) with $V_{t_n} \approx$ $V_{t_n}^{\widetilde{N}_{\text {exp}}, N}$ for $n=0,1, \ldots, N$.
+where $V_{t_0}^{\tilde{N}_{\text{exp}}, N}=V_0, V_{t_0}^{\widetilde{N}_{\text{exp}}, N}=0, \tau=T / N, Z_{t_n} \sim \mathcal{N}(0,1)$ for $n=1, \ldots, N$, and $c_j, \gamma_j, \eta_j$ are given by (27). It thus gives the simulation of the rough Heston model (29) with $V_{t_n} \approx$ $V_{t_n}^{\widetilde{N}_{\text{exp}}, N}$ for $n=0,1, \ldots, N$.
 
 <img src="Multiapprox_paths.svg" alt="MultifactorApprox" width="linewidth"/>
 
