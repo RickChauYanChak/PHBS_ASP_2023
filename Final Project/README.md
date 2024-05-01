@@ -1,8 +1,10 @@
 # Final Project
 
-## Introduction
+Team members: Enze Zhou, Vahan Geghamyan
 
-In this project, we want to implement the algorithms proposed by [Ma and Wu (2022)](#Ma2022) to accelerate the simulation of rough volatility processes. In particular, [Ma and Wu (2022)](#Ma2022) focuses on rough Heston model
+## 1. Introduction
+
+In this project, we want to implement the algorithms proposed by [Ma and Wu (2022)](#Ma2022) to accelerate the simulation of rough volatility processes. In particular, [Ma and Wu (2022)](#Ma2022) focuses on the rough Heston model
 
 $$
 \begin{equation}
@@ -14,30 +16,38 @@ t &\in [0, T], \ \alpha \in(0,1 / 2),
 \end{equation}
 $$
 
-where $f(V_s) = \kappa (\theta - V_s)$, $g(V_s) = \kappa \epsilon \sqrt{V_s}$.
+where $f(V_s) = \kappa (\theta - V_s)$, $g(V_s) = \kappa \epsilon \sqrt{V_s}$, and $\kappa, \theta, \epsilon$ are given positive constants.
 
-## Modified Euler-Maruyama algorithm for simulating rough Heston models 
+## 2. Algorithms
 
-<!-- How to reduce the complexity? Avoid storing 
+### 2.1 Modified Euler-Maruyama algorithm
 
+Let $\{t_n:=n \tau, n=0,1, \ldots, N\}$ be a given uniform mesh on $[0, T]$, where $N$ is a positive integer and $\tau=T / N$. At time level $t_n$, the stochastic Volterra integral equation is written as
 
-To this end, we start from the approximation of the kernel function by the sum of exponential functions. From the definition of $\Gamma$ function (see Olver et al. 2010), we can write the kernel function $t^{-\alpha}$ for $\alpha>0$ into an integral form
-$$
-t^{-\alpha}=\frac{1}{\Gamma(\alpha)} \int_0^{\infty} e^{-t s} s^{\alpha-1} \mathrm{~d} s .
-$$
-
-This is further written as for $t \in[\tau, T]$ and $\tau=T / N \in(0,1]$,
 $$
 \begin{aligned}
-\Gamma(\alpha) t^{-\alpha}= & \int_0^{\infty} e^{-t s} s^{\alpha-1} \mathrm{~d} s \\
-= & \int_0^{2^{-M}} e^{-t s} s^{\alpha-1} \mathrm{~d} s+\int_{2^{-M}}^{2^{N+1}} e^{-t s} s^{\alpha-1} \mathrm{~d} s \\
-& +\int_{2^{N+1}}^{\infty} e^{-t s} s^{\alpha-1} \mathrm{~d} s \\
-\approx & \int_0^{2^{-M}} e^{-t s} s^{\alpha-1} \mathrm{~d} s+\sum_{j=-M}^{-1} \int_{2^j}^{2^{j+1}} e^{-t s} s^{\alpha-1} \mathrm{~d} s \\
-& +\sum_{j=0}^N \int_{2^j}^{2^{j+1}} e^{-t s} s^{\alpha-1} \mathrm{~d} s,
+V_{t_n}= V_0+\frac{1}{\Gamma(1-\alpha)} \int_0^{t_n}\left(t_n-s\right)^{-\alpha} f\left(V_s\right) \mathrm{d} s + \frac{1}{\Gamma(1-\alpha)} \int_0^{t_n}\left(t_n-s\right)^{-\alpha} g\left(V_s\right) \mathrm{d} B_s .
 \end{aligned}
 $$
 
---- -->
+We can then derive that 
+$$
+\begin{aligned}
+V_{t_n} &= V_0+\frac{1}{\Gamma(1-\alpha)} \sum_{k=1}^n \int_{t_{k-1}}^{t_k}\left(t_n-s\right)^{-\alpha} f\left(V_s\right) \mathrm{d} s +\frac{1}{\Gamma(1-\alpha)} \sum_{k=1}^n \int_{t_{k-1}}^{t_k}\left(t_n-s\right)^{-\alpha} g\left(V_s\right) \mathrm{d} B_s \\
+&\approx V_0+\frac{1}{\Gamma(1-\alpha)} \sum_{k=1}^n f\left(V_{t_{k-1}}\right) \int_{t_{k-1}}^{t_k}\left(t_n-s\right)^{-\alpha} \mathrm{d} s +\frac{1}{\Gamma(1-\alpha)} \sum_{k=1}^n g\left(V_{t_{k-1}}\right) \int_{t_{k-1}}^{t_k}\left(t_n-s\right)^{-\alpha} \mathrm{d} B_s \\
+&= V_0+\frac{1}{\Gamma(2-\alpha)} \sum_{k=1}^n f\left(V_{t_{k-1}}\right) \times\left[\left(t_n-t_{k-1}\right)^{1-\alpha}-\left(t_n-t_k\right)^{1-\alpha}\right] +\frac{1}{\Gamma(1-\alpha)} \sum_{k=1}^n g\left(V_{t_{k-1}}\right) \int_{t_{k-1}}^{t_k}\left(t_n-s\right)^{-\alpha} \mathrm{d} B_s,
+\end{aligned}
+$$
+
+where 
+
+$$
+\begin{aligned}
+\int_{t_{k-1}}^{t_k}\left(t_n-s\right)^{-\alpha} \mathrm{d} B_s \sim \mathcal{N}\left(0, \int_{t_{k-1}}^{t_k}\left(t_n-s\right)^{-2 \alpha} \mathrm{d} s\right) =\mathcal{N}\left(0, \frac{\left(t_n-t_{k-1}\right)^{1-2 \alpha}-\left(t_n-t_k\right)^{1-2 \alpha}}{1-2 \alpha}\right)
+\end{aligned}
+$$
+
+---
 
 **Algorithm 1** (Modfied Euler-Maruyama algorithm): 
 
@@ -45,32 +55,30 @@ Let $\{t_n:=n \tau, n=0,1, \ldots, N\}$ be a given uniform mesh on $[0, T]$, whe
 
 $$
 \begin{aligned}
-V_{t_n}^N= & V_0+\frac{1}{\Gamma(2-\alpha)} \sum_{k=1}^n f\left(V_{t_{k-1}}^N\right) \left[\left(t_n-t_{k-1}\right)^{1-\alpha}-\left(t_n-t_k\right)^{1-\alpha}\right] \\
-& +\frac{1}{\Gamma(1-\alpha)} \sum_{k=1}^n g\left(V_{t_{k-1}}^N\right) \left[\frac{\left(t_n-t_{k-1}\right)^{1-2 \alpha}-\left(t_n-t_k\right)^{1-2 \alpha}}{1-2 \alpha}\right]^{1 / 2} Z_{t_k},
+V_{t_n}^N &= V_0+\frac{1}{\Gamma(2-\alpha)} \sum_{k=1}^n f\left(V_{t_{k-1}}^N\right) \left[\left(t_n-t_{k-1}\right)^{1-\alpha}-\left(t_n-t_k\right)^{1-\alpha}\right] \\
+&\quad +\frac{1}{\Gamma(1-\alpha)} \sum_{k=1}^n g\left(V_{t_{k-1}}^N\right) \left[\frac{\left(t_n-t_{k-1}\right)^{1-2 \alpha}-\left(t_n-t_k\right)^{1-2 \alpha}}{1-2 \alpha}\right]^{1 / 2} Z_{t_k},
 \end{aligned}
 $$
 
 where $Z_{t_k} \sim \mathcal{N}(0,1)$
 
-<img src="EM_paths.svg" alt="EM paths" width="linewidth"/>
-
-## Fast algorithm for simulating rough Heston models 
+### 2.2 Fast algorithm
 
 
 - It is hard to simulate the paths of the rough Heston model:
 
     - the volatility process contains an integral process and the kernel $(t − s)^{- \alpha}$ with $\alpha \in (0, 1/2)$ is singular at point $s = t$. 
     
-    - The complexity of the Euler-Maruyama algorithm for simulatingone path is proportional to $O(N^2)$ 
+    - The complexity of the Euler-Maruyama algorithm for simulating one path is $O(N^2)$ 
 
     - Since the integrand is singular at $s = t$, the discretization of the integral process needs special treatment to attain good accuracy. 
     
     
-- Increase the efficency by approximating the kernel function by the sum of exponential functions. 
+- Solution: approximating the kernel function by the sum of exponential functions. 
 
 
 
-From the definition of $\Gamma$ function, we can write the kernel function $t^{-\alpha}$ for $\alpha>0$ into an integral form
+From the definition of $\Gamma$ function ([Olver et al., 2010](#Olver2010)), we can write the kernel function $t^{-\alpha}$ for $\alpha>0$ into an integral form
 
 $$
 t^{-\alpha}=\frac{1}{\Gamma(\alpha)} \int_0^{\infty} e^{-t s} s^{\alpha-1} \mathrm{~d} s .
@@ -86,15 +94,15 @@ $$
 \end{aligned}
 $$
 
-Then, with Gaussian quadrature (Gauss-Jacobi and Gauss-Legendre),
+where $M=O[\log(T)]$ and $N=\left[O\left(\log\log\frac{1}{\xi}+\log\frac{1}{\tau}\right)\right]$. Then, with Gaussian quadrature (Gauss-Jacobi and Gauss-Legendre),
 
 $$
 \begin{aligned}
-\Gamma(\alpha) t^{-\alpha} \approx & \sum_{k=1}^{n_o} e^{-s_{o, k} t} w_{o, k}+\sum_{j=-M}^{-1} \sum_{k=1}^{n_s} e^{-s_{j, k} t} s_{j, k}^{\alpha-1} w_{j, k} +\sum_{j=0}^N \sum_{k=1}^{n_l} e^{-s_{j, k} t} s_{j, k}^{\alpha-1} w_{j, k}
+\Gamma(\alpha) t^{-\alpha} \approx & \sum_{k=1}^{n_o} e^{-s_{o, k} t} w_{o, k}+\sum_{j=-M}^{-1} \sum_{k=1}^{n_s} e^{-s_{j, k} t} s_{j, k}^{\alpha-1} w_{j, k} +\sum_{j=0}^N \sum_{k=1}^{n_l} e^{-s_{j, k} t} s_{j, k}^{\alpha-1} w_{j, k},
 \end{aligned}
 $$
 
-This is re-written into the following compact form:
+where $n_o=\left[O\left(\log\frac{1}{\xi}\right)\right], n_s=\left[O\left(\log\frac{1}{\xi}\right)\right], n_l=\left[O\left(\log\frac{1}{\xi}+\log\frac{1}{\tau}\right)\right]$. This is re-written into the following compact form:
 
 $$
 t^{-\alpha} \approx \sum_{l=1}^{N_{\exp }} \omega_l e^{-x_l t},
@@ -118,6 +126,58 @@ $$
 \end{aligned}
 $$
 
+Then, the approximation error of $t^{-\alpha}$ is given by [Jiang et al. (2015)](#Jiang2015):
+
+$$
+\left|t^{-\alpha}-\sum_{l=1}^{N_{\exp }} \omega_l e^{-x_l t}\right| \leq \xi, \quad \text { for } t \in[\tau, T].
+$$
+
+Next we derive the fast algorithm to solve the stochastic Volterra integral equation. Denote
+
+$$
+\begin{aligned}
+I_1^n & :=\int_0^{t_n}\left(t_n-s\right)^{-\alpha} f\left(V_s\right) \mathrm{d} s, \\
+I_2^n & :=\int_0^{t_n}\left(t_n-s\right)^{-\alpha} g\left(V_s\right) \mathrm{d} B_s .
+\end{aligned}
+$$
+
+Then we use the approximation of the kernel, we obtain that
+
+$$
+\begin{aligned}
+I_1^n &= \int_{t_{n-1}}^{t_n}\left(t_n-s\right)^{-\alpha} f\left(V_s\right) \mathrm{d} s+\int_0^{t_{n-1}}\left(t_n-s\right)^{-\alpha} f\left(V_s\right) \mathrm{d} s \\
+&\approx \int_{t_{n-1}}^{t_n}\left(t_n-s\right)^{-\alpha} f\left(V_s\right) \mathrm{d} s+\int_0^{t_{n-1}} \sum_{l=1}^{N_{\text {exp }}} \omega_l e^{-x_l\left(t_n-s\right)} f\left(V_s\right) \mathrm{d} s \\
+&= \int_{t_{n-1}}^{t_n}\left(t_n-s\right)^{-\alpha} f\left(V_s\right) \mathrm{d} s +\sum_{l=1}^{N_{\text {exp }}} \omega_l e^{-x_l \tau} \int_0^{t_{n-1}} e^{-x_l\left(t_{n-1}-s\right)} f\left(V_s\right) \mathrm{d} s \\
+&\approx \frac{\tau^{1-\alpha}}{1-\alpha} f\left(V_{t_{n-1}}\right)+\sum_{l=1}^{N_{\text {exp }}} \omega_l e^{-x_l \tau} H_l\left(t_{n-1}\right),
+\end{aligned}
+$$
+
+where $\tau=t_n-t_{n-1}=T/N$, and 
+
+$$
+\begin{aligned}
+H_l\left(t_{n-1}\right) &:= \int_0^{t_{n-1}} e^{-x_l\left(t_{n-1}-s\right)} f\left(V_s\right) \mathrm{d} s \\
+&= \int_{t_{n-2}}^{t_{n-1}} e^{-x_l\left(t_{n-1}-s\right)} f\left(V_s\right) \mathrm{d} s +e^{-x_l \tau} \int_0^{t_{n-2}} e^{-x_l\left(t_{n-2}-s\right)} f\left(V_s\right) \mathrm{d} s \\
+&= \int_{t_{n-2}}^{t_{n-1}} e^{-x_l\left(t_{n-1}-s\right)} f\left(V_s\right) \mathrm{d} s+e^{-x_l \tau} H_l\left(t_{n-2}\right) \\
+&\approx \frac{1-e^{-x_l \tau}}{x_l} f\left(V_{t_{n-2}}\right)+e^{-x_l \tau} H_l\left(t_{n-2}\right),
+\end{aligned}
+$$
+
+with $H_l(t_0)=0$ for $1 \leq l \leq N_{\text{exp}}$. The decomposition of $I_2^n$ is similar:
+
+$$
+\begin{aligned}
+I_2^n & =\int_{t_{n-1}}^{t_n}\left(t_n-s\right)^{-\alpha} g\left(V_s\right) \mathrm{d} B_s+\sum_{l=1}^{N_{\text {exp }}} \omega_l e^{-x_l \tau} J_l\left(t_{n-1}\right) \\
+& \approx \tau^{-\alpha} g\left(V_{t_{n-1}}\right)\left(B_{t_n}-B_{t_{n-1}}\right)+\sum_{l=1}^{N_{\text {exp }}} \omega_l e^{-x_l \tau} J_l\left(t_{n-1}\right), \\
+& = \frac{\tau^{\frac{1}{2}-\alpha}}{(1-2 \alpha)^{\frac{1}{2}}} g\left(V_{t_{n-1}}\right) Z_{t_n}+\sum_{l=1}^{N_{\text {exp }}} \omega_l e^{-x_l \tau} J_l\left(t_{n-1}\right), \\
+J_l\left(t_{n-1}\right) &:=  \int_0^{t_{n-1}} e^{-x_l\left(t_{n-1}-s\right)} g\left(V_s\right) \mathrm{d} s \\
+&= \int_{t_{n-2}}^{t_{n-1}} e^{-x_l\left(t_{n-1}-s\right)} g\left(V_s\right) \mathrm{d} B_s +e^{-x_l \tau} \int_0^{t_{n-2}} e^{-x_l\left(t_{n-2}-s\right)} g\left(V_s\right) \mathrm{d} B_s \\
+&= \int_{t_{n-2}}^{t_{n-1}} e^{-x_l\left(t_{n-1}-s\right)} g\left(V_s\right) \mathrm{d} B_s+e^{-x_l \tau} J_l\left(t_{n-2}\right) \\
+&\approx \sqrt{\frac{1-e^{-2x_l \tau}}{2 x_l}} g\left(V_{t_{n-2}}\right) Z_{t_{n-1}}+e^{-x_l \tau} J_l\left(t_{n-2}\right).
+\end{aligned}
+$$
+Combining all, we have the Fast algorithm.
+
 ---
 
 **Algorithm 2** (Fast algorithm) The fast algorithm for simulation of (2) is given by
@@ -125,17 +185,16 @@ $$
 $$
 \begin{aligned}
 V_{t_n}^N &= V_0+\frac{\tau^{1-\alpha}}{\Gamma(2-\alpha)} f\left(V_{t_{n-1}}^N\right) +\frac{1}{\Gamma(1-\alpha)} \sum_{l=1}^{N_{\text {exp }}} \omega_l e^{-x_l \tau} H_l^N\left(t_{n-1}\right) \\
-& +\frac{\tau^{\frac{1}{2}-\alpha}}{\sqrt{1-2\alpha}\  \Gamma(1-\alpha)} g\left(V_{t_{n-1}}^N\right) Z_{t_n} +\frac{1}{\Gamma(1-\alpha)} \sum_{l=1}^{N_{\text {exp }}} \omega_l e^{-x_l \tau} J_l^N\left(t_{n-1}\right), \quad n=1, \ldots, N, \\
+& \quad +\frac{\tau^{\frac{1}{2}-\alpha}}{\sqrt{1-2\alpha}\  \Gamma(1-\alpha)} g\left(V_{t_{n-1}}^N\right) Z_{t_n} +\frac{1}{\Gamma(1-\alpha)} \sum_{l=1}^{N_{\text {exp }}} \omega_l e^{-x_l \tau} J_l^N\left(t_{n-1}\right), \quad n=1, \ldots, N, \\
 H_l^N\left(t_{n-1}\right) &= \frac{f\left(V_{t_{n-2}}^N\right)}{x_l}\left(1-e^{-x_l \tau}\right)+e^{-x_l \tau} H_l^N\left(t_{n-2}\right), \quad n=2, \ldots, N, \\
 J_l^N\left(t_{n-1}\right) &= \sqrt{\frac{1-e^{-2 x_l \tau}}{2 x_l}}  g\left(V_{t_{n-2}}^N\right) Z_{t_{n-1}}+e^{-x_l \tau} J_l^N\left(t_{n-2}\right), \quad n=2, \ldots, N,
 \end{aligned}
 $$
 
-with $V_{t_0}^N=V_0, \quad H_l^N\left(t_0\right)=0, \quad J_l^N\left(t_0\right)=0, \quad \tau=T / N, \quad Z_{t_n} \sim$ $\mathcal{N}(0,1)$ for $n=1, \ldots, N$.
+with $V_{t_0}^N=V_0, H_l^N\left(t_0\right)=0, J_l^N\left(t_0\right)=0, \tau=T / N, Z_{t_n} \sim$ $\mathcal{N}(0,1)$ for $n=1, \ldots, N$.
 
-<img src="Fast_paths.svg" alt="Fast paths" width="linewidth"/>
 
-## Multi-factor approximation algorithm for simulating rough Heston models 
+### 2.3 Multi-factor approximation algorithm
 
 [Abi Jaber and El Euch (2019)](#AbiJaber2019) approximate the kernel function by
 
@@ -165,7 +224,7 @@ with $V_0^{\widetilde{N}_{\text {exp}}, j} = 0$, for $j=1, \ldots, \tilde{N}_{\t
 
 ---
 
-Algorithm 4 (Multi-factor approximation algorithm, [Abi Jaber (2019)](#AbiJaber2019)) Let $V_{t_n}^{\widetilde{N}_\text{exp}, N}$ and $V_{t_n}^{\tilde{N}_{\text{exp}}, j, N}$ denote the approximation of $V_{t_n}^{\tilde{N}_{\text{exp}}}$ and $V_{t_n}^{\tilde{N}_{\text{exp}}, j}$, respectively, for $n=0,1, \ldots, N$. Then the algorithm for simulation of rough Heston model given by
+Algorithm 4 (Multi-factor approximation algorithm, [Abi Jaber et al. (2019)](#AbiJaber2019)) Let $V_{t_n}^{\widetilde{N}_\text{exp}, N}$ and $V_{t_n}^{\tilde{N}_{\text{exp}}, j, N}$ denote the approximation of $V_{t_n}^{\tilde{N}_{\text{exp}}}$ and $V_{t_n}^{\tilde{N}_{\text{exp}}, j}$, respectively, for $n=0,1, \ldots, N$. Then the algorithm for simulation of rough Heston model given by
 
 $$
 \begin{aligned}
@@ -177,36 +236,145 @@ $$
 
 where $V_{t_0}^{\tilde{N}_{\text{exp}}, N}=V_0, V_{t_0}^{\widetilde{N}_{\text{exp}}, N}=0, \tau=T / N, Z_{t_n} \sim \mathcal{N}(0,1)$ for $n=1, \ldots, N$, and $c_j, \gamma_j, \eta_j$ are given by (27). It thus gives the simulation of the rough Heston model (29) with $V_{t_n} \approx$ $V_{t_n}^{\widetilde{N}_{\text{exp}}, N}$ for $n=0,1, \ldots, N$.
 
-<img src="Multiapprox_paths.svg" alt="MultifactorApprox" width="linewidth"/>
+## 3. Usage with PyFENG
 
-## Results
+`In [1]:`
+```Python
+import numpy as np
+import pyfeng as pf
+import matplotlib.pyplot as plt
+import pandas as pd
+```
 
-### Comparison among three algorithms
+`In [2]:`
+```Python
+rheston_038 = pf.RoughHestonMcMaWu2022(V_0=0.0392, rho=-0.681, kappa=0.1, epsilon=0.331, theta=0.3156, alpha=0.38) # initialize the model
+rheston_038.set_num_params(texp=1, n_path=1_000, n_ts=1_000) # set the time to maturity, number of paths, and number of time steps
+Z_t, W_t = rheston_038.random_normals() # generate the random normals for simulation
+V_t = rheston_038.Fast(Z_t) # simulate the volatility process (in this case the Fast algorithm is used)
+K = np.linspace(80, 120, 9) # strikes
+rheston_038.price(S_0=100, V_t=V_t, W_t=W_t, K=K)[1] # price European options
+```
 
-<img src="algo_comparison_038.svg" alt="algocompare038" width="linewidth"/>
-<img src="algo_comparison_002.svg" alt="algocompare002" width="linewidth"/>
+`Out [2]:`
+```Python
+array([22.43265973, 18.67012492, 15.35417673, 12.46352008, 9.92584184, 7.75283787, 5.96323521, 4.50957968, 3.38396187])
+```
 
-- For $\alpha=0.38$, the Fast algorithm approximates well the pattern of the Modified Euler-Maruyama algorithm, whereas for $\alpha=0.02$, the Multi-factor approximation algorithm generates very similar paths to the Modified Euler-Maruyama algorithm.
+## 4. Experiments
 
-### Option pricing
+### 4.1 Comparison among three algorithms
+
+<img src="alpha_comparison.svg" alt="alphacompare038" width="linewidth"/>
+
+Observations:
+- the paths generated by the Modified Euler-Maruyama algorithm and the Fast algorithm exhibit the same extent of roughness when $\alpha=0.38$, while the paths from the Multifactor approximation algorithm seems smoother.
+- the paths of $\alpha=0.38$ is much rougher than that of $\alpha=0.02$, obviously and intuitively
+
+<img src="algo_comparison.svg" alt="algocompare038" width="linewidth"/>
+
+Observations:
+- when $\alpha=0.38$, the Fast algorithm generates very similar paths to that of the Modified Euler-Maruyama algorithm
+- While when $\alpha=0.02$, the Multi-factor approximation algorithm instead generates very similar paths to that of the Modified Euler-Maruyama algorithm.
+- the gap between the Fast algorithm and the Modified Euler-Maruyama algorithm widens as time evolves
+
+### 4.2 Computation time
+
+For $T=1$,
+
+|      |        One path             | One path | 1000 paths simultaneously | 1000 paths simultaneously |
+| ---- | -------------- | ---------- | -------------- | --------- |
+| # time step | Euler-Maruyama | Fast       | Euler-Maruyama | Fast      |
+| 250  | 6.615250       | 8.578748   | 0.115804       | 0.185450  |
+| 500  | 14.519335      | 17.271443  | 0.592969       | 0.415592  |
+| 1000 | 38.725009      | 34.958345  | 2.544576       | 1.085544  |
+| 2000 | 113.862958     | 69.938801  | 8.690365       | 2.323525  |
+| 4000 | 368.988235     | 141.535237 | 41.461980      | 5.271604  |
+| 6000 | 1391.173844    | 290.813273 | 169.880603     | 15.053457 |
+
+The above computation time is measured in milliseconds (ms). We can see that
+- when time step is large, the Fast algorithm takes less time; when time step is small, the Modified Euler-Maruyama algorithm takes less time
+- due to vectorization, the average time for generating one path in the latter case, generating 1000 paths simultaneously, is significantly shorter (up to **45x faster**)
+
+### 4.3 Option pricing
 
 Use the same parameters from [Callegaro et al. (2021)](#Callegaro2021), 
 
 $$
-S_0=100, \quad V_0=0.0392, \quad \rho=-0.681, \quad \kappa=0.1, \theta=0.3156, \quad \epsilon=0.331, \quad r=0 .
+S_0=100, \quad V_0=0.0392, \quad \rho=-0.681, \quad \kappa=0.1, \quad \theta=0.3156, \quad \epsilon=0.331, \quad r=0 .
 $$
 
-Run the simulation with number of time steps $250$, number of paths $100,000$. Repeat the experiment for $100$ times.
+Run the simulation with number of time steps $250$, number of paths $100,000$. Repeat the experiment for $100$ times (note that every time you run you might get different results due to the very nature of MC simulation).
 
 - $\alpha=0.38$:
 
-| Strike | 80 | 85 | 90 | 95 | 100 | 105 | 110 | 115 | 120 |
-| ------ | -- | -- | -- | -- | --- | --- | --- | --- | --- |
-| [Callegaro et al. (2021)](#Callegaro2021) | 22.1366 | 18.3529 | 14.9672 | 12.0059 | 9.4737 | 7.3563 | 5.6234 | 4.2343 | 3.1424 |
-| Modified EM | 22.12203398 | 18.33473566 | 14.94505137 | 11.98009591 | 9.44551607 | 7.32696825 | 5.59420053 | 4.20612893 | 3.11648568 |
-| Fast | 22.09846982 | 18.30534597 | 14.91240798 | 11.94583918 | 9.41128291 | 7.29444754 | 5.56505075 | 4.18083187 | 3.09508284 |
+    | Strike | Algorithm type | One day | One week | One month | Six months | One year | Two years |
+    | --- | --- | --- | --- | --- | --- | --- | --- |
+    | 80 | [Callegaro et al. (2021)](#Callegaro2021) | 20 | 20 | 20.0005 | 20.6112 | 22.1366 | 25.4301 |
+    |  | Modified EM | 19.99995     | 19.999989 | 20.000658 | 20.607918  | 22.120343 | 25.396956 |
+    |  | Fast | 20.000033 | 20.001227 | 20.000293 | 20.610202 | 22.099119 | 25.334411 |
+    | 85 | [Callegaro et al. (2021)](#Callegaro2021) | 15 | 15 | 15.0108 | 16.2807 | 18.3529 | 22.2091 |
+    |  | Modified EM | 14.99995     | 14.999989 | 15.010846 | 16.274347  | 18.332555 | 22.171247 |
+    |  | Fast | 15.000033 | 15.001227 | 15.010417 | 16.274096 | 18.304116 | 22.102681 |
+    | 90 | [Callegaro et al. (2021)](#Callegaro2021) | 10 | 10.0002 | 10.1144 | 12.3948 | 14.9672 | 19.2898 |
+    |  | Modified EM | 9.999954     | 10.000185 | 10.113493 | 12.384250  | 14.942785 | 19.247781 |
+    |  | Fast | 10.000033 | 10.001414 | 10.113269 | 12.382012 | 14.909042 | 19.174900 |
+    | 95 | [Callegaro et al. (2021)](#Callegaro2021) | 5.0003 | 5.0491 | 5.6723 | 9.0636 | 12.0059 | 16.6676 |
+    |  | Modified EM | 4.999954     | 5.044462  | 5.669319  | 9.049536   | 11.977843 | 16.621762 |
+    |  | Fast | 5.000034 | 5.045720 | 5.668659 | 9.045364 | 11.940542 | 16.546432 |
+    | 100 | [Callegaro et al. (2021)](#Callegaro2021) | 0.5012 | 1.1347 | 2.3896 | 6.3497 | 9.4737 | 14.3319 |
+    |  | Modified EM | 0.4147314    | 1.112365  | 2.384964  | 6.334239   | 9.443891  | 14.283308 |
+    |  | Fast | 0.414964 | 1.112882 | 2.383228 | 6.328224 | 9.405186 | 14.206878 |
+    | 105 | [Callegaro et al. (2021)](#Callegaro2021) | 6.39e-05 | 0.04113 | 0.6809 | 4.2550 | 7.3563 | 12.2676 |
+    |  | Modified EM | 1.266341e-09 | 0.036536  | 0.677000  | 4.239743   | 7.326027  | 12.217084 |
+    |  | Fast | 0.000000 | 0.036734 | 0.676066 | 4.233135 | 7.288169 | 12.140966 |
+    | 110 | [Callegaro et al. (2021)](#Callegaro2021) | 2.37e-05 | 9.22e-05 | 0.1205 | 2.7251 | 5.6234 | 10.4562 |
+    |  | Modified EM | 0.000000     | 6.3e-05   | 0.119173  | 2.711442   | 5.594169  | 10.404734 |
+    |  | Fast | 0.000000 | 6.8e-05 | 0.118633 | 2.705616 | 5.558681 | 10.329619 |
+    | 115 | [Callegaro et al. (2021)](#Callegaro2021) | 1.51e-05 | 6.82e-09 | 0.0124 | 1.6680 | 4.2343 | 8.8773 |
+    |  | Modified EM | 0.000000     | 0.000000  | 0.012148  | 1.656444   | 4.206951  | 8.825911  |
+    |  | Fast | 0.000000 | 0.000000 | 0.012179 | 1.652153 | 4.174740 | 8.753055 |
+    | 120 | [Callegaro et al. (2021)](#Callegaro2021) | 1.14e-05 | 1.80e-13 | 7.32e-04 | 0.9761 | 3.1424 | 7.5093 |
+    |  | Modified EM | 0.000000 | 0.000000 | 6.88e-04 | 0.967280 | 3.117224 | 7.458775 |
+    |  | Fast | 0.000000 | 0.000000 | 6.97e-04 | 0.964104 | 3.089237 | 7.389633 |
 
-- $\alpha=0.02$ : To be done.
+- $\alpha=0.0001$ (approximation of regular Heston): 
+
+    | Strike | Algorithm type | One day | One week | One month | Six months | One year | Two years |
+    | --- | --- | --- | --- | --- | --- | --- | --- |
+    | 80 | Heston FFT | 19.999817    | 20.00000     | 20.000119 | 20.467789  | 21.882194 | 25.342685 |
+    |  | Modified EM | 20.00000     | 20.00032     | 19.998105 | 20.462389  | 21.860666 | 25.300803 |
+    |  | Fast | 19.99991     | 19.99955     | 19.999065 | 20.452699  | 21.769390 | 25.009149 |
+    | 85 | Heston FFT | 14.999592    | 15.00000     | 15.005036 | 16.065825  | 18.044783 | 22.116098 |
+    |  | Modified EM | 15.00000     | 15.00032     | 15.002900 | 16.057406  | 18.019379 | 22.070199 |
+    |  | Fast | 14.99991     | 14.99955     | 15.003894 | 16.039038  | 17.902571 | 21.743280 |
+    | 90 | Heston FFT | 9.999253     | 10.00005     | 10.081315 | 12.117169  | 14.618737 | 19.193730 |
+    |  | Modified EM | 9.999998     | 10.00037     | 10.078289 | 12.105610  | 14.590280 | 19.144437 |
+    |  | Fast | 9.999908     | 9.999596     | 10.079303 | 12.079071  | 14.452885 | 18.790030 |
+    | 95 | Heston FFT | 5.000421     | 5.033864     | 5.594002  | 8.749388   | 11.634501 | 16.570951 |
+    |  | Modified EM | 4.999998     | 5.033804     | 5.589046  | 8.735251   | 11.604186 | 16.519429 |
+    |  | Fast | 4.999908     | 5.033018     | 5.589339  | 8.703727   | 11.453570 | 16.146129 |
+    | 100 | Heston FFT | 0.416402     | 1.097419     | 2.312255  | 6.033819   | 9.098308  | 14.236957 |
+    |  | Modified EM | 0.4127088    | 1.095381     | 2.306016  | 6.018755   | 9.067458  | 14.184353 |
+    |  | Fast | 0.4126009    | 1.095105     | 2.306729  | 5.986315   | 8.912003  | 13.800273 |
+    | 105 | Heston FFT | -0.000445    | 4.138453e-02 | 0.651703  | 3.969527   | 6.994116  | 12.176208 |
+    |  | Modified EM | 4.170842e-07 | 4.093408e-02 | 0.647528  | 3.955276   | 6.964014  | 12.123773 |
+    |  | Fast | 2.615896e-07 | 4.097443e-02 | 0.648274  | 3.925360   | 6.812002  | 11.736762 |
+    | 110 | Heston FFT | 0.000120     | 1.583470e-04 | 0.119056  | 2.490984   | 5.288288  | 10.369848 |
+    |  | Modified EM | 0.000000     | 1.592360e-04 | 0.117548  | 2.478975   | 5.260181  | 10.318662 |
+    |  | Fast | 0.000000     | 1.542381e-04 | 0.118001  | 2.454275   | 5.118236  | 9.936108  |
+    | 115 | Heston FFT | -0.000369    | 5.558204e-08 | 0.013874  | 1.492120   | 3.935542  | 8.796976  |
+    |  | Modified EM | 0.000000     | 7.617007e-08 | 0.013623  | 1.482647   | 3.910486  | 8.747960  |
+    |  | Fast | 0.000000     | 3.838055e-08 | 0.013592  | 1.464176   | 3.783029  | 8.375640  |
+    | 120 | Heston FFT | 0.000544 | 4.916068e-10 | 0.001038 | 0.854310 | 2.884879 | 7.435743 |
+    |  | Modified EM | 0.000000 | 0.000000 | 0.000991 | 0.847441 | 2.863103 | 7.389376 |
+    |  | Fast | 0.000000 | 0.000000 | 0.000979 | 0.834522 | 2.753132 | 7.032559 |
+
+Observations:
+- for both cases the Modified Euler-Maruyama algorithm is more accurate in terms of pricing European call options
+- both methods exhibit downward biases compared to [Callegaro et al. (2021)](#Callegaro2021) in the case of $\alpha=0.38$
+- both methods are quite accurate when the time to maturity is **less than one year**
+- both methods approximate well the regular Heston case when the roughness parameter is set to be $\alpha=0.0001$
 
 ## References
 
@@ -218,4 +386,10 @@ Run the simulation with number of time steps $250$, number of paths $100,000$. R
 Tough). Mathematics of Operations Research 46(1):221-254. DOI: [10.1287/moor.2020.1054](https://doi.org/10.1287/moor.2020.1054)
 
 <a id="AbiJaber2019"></a>
-[3] Abi Jaber, E., & El Euch, O. (2019). Multifactor approximation of rough volatility models. SIAM journal on financial mathematics, 10(2), 309-349, DOI: [10.1137/18M1170236](https://doi.org/10.1137/18M1170236)
+[3] Abi Jaber, E., & El Euch, O. (2019). Multifactor approximation of rough volatility models. SIAM journal on financial mathematics, 10(2), 309-349. DOI: [10.1137/18M1170236](https://doi.org/10.1137/18M1170236)
+
+<a id="Olver2010"></a>
+[4] Olver, F.W.J., Lozier, D.W., Boisvert, R.F. and Clark, C.W., NIST Handbook of Mathematical Functions, 2010 (Cambridge University Press: New York).
+
+<a id="Jiang2015"></a>
+[5] Jiang, S., Zhang, J., Zhang, Q., & Zhang, Z. (2017). Fast evaluation of the Caputo fractional derivative and its applications to fractional diffusion equations. Communications in Computational Physics, 21(3), 650-678. DOI: [10.4208/cicp.OA-2016-0136](https://doi.org/10.4208/cicp.OA-2016-0136)
