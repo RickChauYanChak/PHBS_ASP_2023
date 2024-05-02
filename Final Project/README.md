@@ -126,7 +126,7 @@ $$
 \end{aligned}
 $$
 
-Then, the approximation error of $t^{-\alpha}$ is given by [Jiang et al. (2015)](#Jiang2015):
+Then, the approximation error of $t^{-\alpha}$ is given by [Jiang et al. (2017)](#Jiang2017):
 
 $$
 \left|t^{-\alpha}-\sum_{l=1}^{N_{\exp }} \omega_l e^{-x_l t}\right| \leq \xi, \quad \text { for } t \in[\tau, T].
@@ -391,5 +391,5 @@ Tough). Mathematics of Operations Research 46(1):221-254. DOI: [10.1287/moor.202
 <a id="Olver2010"></a>
 [4] Olver, F.W.J., Lozier, D.W., Boisvert, R.F. and Clark, C.W., NIST Handbook of Mathematical Functions, 2010 (Cambridge University Press: New York).
 
-<a id="Jiang2015"></a>
+<a id="Jiang2017"></a>
 [5] Jiang, S., Zhang, J., Zhang, Q., & Zhang, Z. (2017). Fast evaluation of the Caputo fractional derivative and its applications to fractional diffusion equations. Communications in Computational Physics, 21(3), 650-678. DOI: [10.4208/cicp.OA-2016-0136](https://doi.org/10.4208/cicp.OA-2016-0136)
