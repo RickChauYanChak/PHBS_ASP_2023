@@ -376,6 +376,88 @@ Observations:
 - both methods are quite accurate when the time to maturity is **less than one year**
 - both methods approximate well the regular Heston case when the roughness parameter is set to be $\alpha=0.0001$
 
+### 4.4 Conditional MC pricing
+
+1. **Stochastic Differential Equation:**
+   $$
+   dS_t = r S_t dt + S_t \sqrt{V_t} dW_t = r S_t dt + S_t \sqrt{V_t} (\rho dZ_t + \sqrt{1 - \rho^2} dX_t)
+   $$
+
+2. **Logarithmic Transformation of the Stochastic Process:**
+   $$
+   d \log S_t = \left(r - \frac{1}{2} V_t\right) dt + \rho \sqrt{V_t} dZ_t + \sqrt{1 - \rho^2} \sqrt{V_t} dX_t
+   $$
+
+3. **Integrated Form:**
+   $$
+   \log \frac{S_T}{S_0} = \int_0^T \left(r - \frac{1}{2} V_t\right) dt + \rho \int_0^T \sqrt{V_t} dZ_t + \sqrt{1 - \rho^2} \int_0^T  \sqrt{V_t} dX_t
+   $$
+   where $Z_t \sim N(0,1)$ and $X_t \sim N(0,1)$.
+
+4. **Definitions:**
+   $$
+   V_{0,T} = \int_0^T V_t dt, \quad Y_{0,T} = \int_0^T \sqrt{V_t} dZ_t
+   $$
+
+5. **Distribution of the Log Price Ratio:**
+   $$
+   \log \frac{S_T}{S_0} \sim N(\mu, \sigma^2), \quad \text{where } \mu = rT - \frac{1}{2} V_{0,T} + \rho Y_{0,T}, \quad \sigma^2 = (1 - \rho^2) V_{0,T}
+   $$
+
+6. **Expression for Expected Values:**
+   $$
+   F_T = E[S_T | V_{0,T}, Y_{0,T}] = S_0 \exp(rT - \frac{\rho^2}{2} V_{0,T} + \rho Y_{0,T})
+   $$
+
+7. **Martingale-Corrected Control Variate ([Choi, 2024](#Choi2024)):**
+   $$
+   F_T = e^{rT} \frac{S_T}{S_0} \quad \text{(observable)}
+   $$
+   $$
+   F_T^{\text{adj}} = \mu F_T, \quad \text{where } \mu = \frac{S_0 e^{rT}}{{E_{MC}} \{S_T\}}
+   $$
+
+8. **Conditional Monte Carlo Method:**
+   $$
+   S_0^{\text{cond}} = S_0 \exp \left(rT - \frac{\rho^2}{2} V_{0,T} + \rho Y_{0,T}\right), \quad \sigma_{\text{BS}} = \sqrt{(1-\rho^2) \frac{V_{0,T}}{T}}
+   $$
+
+#### 4.4.1 Pricing with martingale-preserving control variate
+
+| Strike | Algorithm type | One day | One week | One month | Six months | One year | Two years |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 80 | [Callegaro et al. (2021)](#Callegaro2021) | 20 | 20 | 20.0005 | 20.6112 | 22.1366 | 25.4301 |
+|  | Modified EM with CV | 20.00000      | 20.00000     | 20.000542 | 20.608778  | 22.135977 | 25.436291 |
+|  | Fast with CV | 20.00000      | 20.00000     | 20.000576 | 20.607617  | 22.102826 | 25.374004 |
+| 85 | [Callegaro et al. (2021)](#Callegaro2021) | 15 | 15 | 15.0108 | 16.2807 | 18.3529 | 22.2091 |
+|  | Modified EM with CV | 15.00000      | 15.00000     | 15.010844 | 16.277846  | 18.351720 | 22.216698 |
+|  | Fast with CV | 15.00000      | 15.00000     | 15.011091 | 16.275468  | 18.310280 | 22.145321 |
+| 90 | [Callegaro et al. (2021)](#Callegaro2021) | 10 | 10.0002 | 10.1144 | 12.3948 | 14.9672 | 19.2898 |
+|  | Modified EM with CV | 10.00000      | 10.00019     | 10.114274 | 12.391502  | 14.965419 | 19.298556 |
+|  | Fast with CV | 10.00000      | 10.00020     | 10.115174 | 12.388074  | 14.917422 | 19.219437 |
+| 95 | [Callegaro et al. (2021)](#Callegaro2021) | 5.0003 | 5.0491 | 5.6723 | 9.0636 | 12.0059 | 16.6676 |
+|  | Modified EM with CV | 5.000001      | 5.045234     | 5.671690  | 9.059985   | 12.003238 | 16.677252 |
+|  | Fast with CV | 5.000001      | 5.044793     | 5.672668  | 9.055923   | 11.951296 | 16.592076 |
+| 100 | [Callegaro et al. (2021)](#Callegaro2021) | 0.5012 | 1.1347 | 2.3896 | 6.3497 | 9.4737 | 14.3319 |
+|  | Modified EM with CV | 0.4152159     | 1.114473     | 2.388108  | 6.345958   | 9.470222  | 14.342189 |
+|  | Fast with CV | 0.4150013     | 1.113114     | 2.387612  | 6.341652   | 9.417300  | 14.252826 |
+| 105 | [Callegaro et al. (2021)](#Callegaro2021) | 6.39e-05 | 0.04113 | 0.6809 | 4.2550 | 7.3563 | 12.2676 |
+|  | Modified EM with CV | 2.232028e-08  | 0.03656753   | 0.679575  | 4.251372   | 7.351959  | 12.278174 |
+|  | Fast with CV | 2.101193e-08  | 0.03679238   | 0.678283  | 4.247071   | 7.300848  | 12.186532 |
+| 110 | [Callegaro et al. (2021)](#Callegaro2021) | 2.37e-05 | 9.22e-05 | 0.1205 | 2.7251 | 5.6234 | 10.4562 |
+|  | Modified EM with CV | 5.442542e-30  | 6.328388e-05 | 0.120067  | 2.722016   | 5.618406  | 10.466766 |
+|  | Fast with CV | 8.680417e-30  | 6.536687e-05 | 0.119506  | 2.717893   | 5.571335  | 10.374669 |
+| 115 | [Callegaro et al. (2021)](#Callegaro2021) | 1.51e-05 | 6.82e-09 | 0.0124 | 1.6680 | 4.2343 | 8.8773 |
+|  | Modified EM with CV | 9.449292e-68  | 3.182912e-09 | 0.012431  | 1.665557   | 4.228811  | 8.887512  |
+|  | Fast with CV | 1.234556e-67  | 3.143994e-09 | 0.012363  | 1.661796   | 4.187254  | 8.796609  |
+| 120 | [Callegaro et al. (2021)](#Callegaro2021) | 1.14e-05 | 1.80e-13 | 7.32e-04 | 0.9761 | 3.1424 | 7.5093 |
+|  | Modified EM with CV | 2.161768e-118 | 3.065169e-15 | 7.30e-04 | 0.974437 | 3.136715 | 7.518997 |
+|  | Fast with CV | 2.694674e-117 | 2.774488e-15 | 7.29e-04 | 0.971228 | 3.101379 | 7.430699 |
+
+Observations:
+- with only 1,000 paths, the prices are more accurate compared to the unconditional ones with 100,000 paths
+- further verify that the Fast algorithm produce downward biases
+
 ## References
 
 <a id="Ma2022"></a>
@@ -393,3 +475,6 @@ Tough). Mathematics of Operations Research 46(1):221-254. DOI: [10.1287/moor.202
 
 <a id="Jiang2017"></a>
 [5] Jiang, S., Zhang, J., Zhang, Q., & Zhang, Z. (2017). Fast evaluation of the Caputo fractional derivative and its applications to fractional diffusion equations. Communications in Computational Physics, 21(3), 650-678. DOI: [10.4208/cicp.OA-2016-0136](https://doi.org/10.4208/cicp.OA-2016-0136)
+
+<a id="Choi2024"></a>
+[6] Choi, J. (2024). Exact simulation scheme for the Ornstein-Uhlenbeck driven stochastic volatility model with the Karhunen-Lo\eve expansions. arXiv preprint arXiv:2402.09243. DOI: [10.48550/arXiv.2402.09243](https://doi.org/10.48550/arXiv.2402.09243)
