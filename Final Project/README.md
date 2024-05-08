@@ -253,7 +253,7 @@ rheston_038.set_num_params(texp=1, n_path=1_000, n_ts=1_000) # set the time to m
 Z_t, W_t = rheston_038.random_normals() # generate the random normals for simulation
 V_t = rheston_038.Fast(Z_t) # simulate the volatility process (in this case the Fast algorithm is used)
 K = np.linspace(80, 120, 9) # strikes
-rheston_038.price(S_0=100, V_t=V_t, W_t=W_t, K=K)[1] # price European options
+rheston_038.price(spot=100, V_t=V_t, W_t=W_t, strike=K)[1] # price European options
 ```
 
 `Out [2]:`
